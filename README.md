@@ -36,33 +36,31 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-*see code cell 3 of ipython notebook
+*see code cell 3 of ipython notebook, as well as bottom where provide utilities are defined.
 
 I began by reading in globs of positive and negative training data. I then used the provided utility batch feature extractor, which I modified slightly to use opencv image reading utilities, as well as to normalize all images to (0,1) to ensure no issues with format, etc. once they were in the pipeline. The feature selection consisted of (some combination of) HOG, spatial histogramming, and color binning.  
 
 This provided an almost infinite space of parameter selection possibilities, which will be discussed below. 
 
-Noteably, I used this feature extraction only for processing the training data. All other data for predictions was processed by a seperate function. This function, inspired by the tutorial video for the project, took
+Noteably, I used this feature extraction only for processing the training data. All other data for predictions was processed by a seperate function.
 
-![alt text][image1]
+See sample of training data below:
 
-
-I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
-
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
-
-
-![alt text][image2]
+![alt text][training]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
 Regarding parameters, I found ultimately that the defaults provided we're mostly adequate. 
 
-* I experimented somewhat with colorspace, finding YCrCb, HSV, and HLS to work about comparably. I am, however, more comfortable with HSV as far as intuitions as I've been using it all semester; and, it is also well regarded for CV generally, but also in terms of describing light cast, which seems to have been a recurring issue for many students, that I've largely been spared. Moreover, I tried playing with the number of channels, and still feel that the hue channel is superfluous, and possibly detrimental for such a specific track and with so little data. That said, the pipeline worked well enough (and with LinearSVC, fast enough) that I kept it just in case, and maybe for a bit of additional accuracy at the cost of reduced robustness. 
+* I experimented somewhat with colorspace, finding YCrCb, HSV, and HLS to work about comparably. I am, however, more comfortable with HSV as far as intuitions as I've been using it all semester; and, it is also well regarded for CV generally, but also in terms of describing light cast, which seems to have been a recurring issue for many students, (issues that I've largely been spared having used HSV carefully). Moreover, I tried playing with the number of channels, and while I still feel that the hue channel is superfluous, and possibly detrimental for general, robust use, the pipeline worked well enough (and with LinearSVC, fast enough) that I kept it just in case, and maybe for a bit of additional accuracy at the cost of reduced robustness. 
 * Block size is widely accepted as more-or-less settled on 2x2 (and in fact, I believe some major implementations allow for nothing larger). 
-* Orientation count is also more or less ideal at 9, this can be found in the literature even.
+* Orientation count is also more or less ideal at 9 (that 9 is typically the peak of improvement before actual regression can even be found in the literature).
 * Pixels per cell I did attempt to double, but I found I had been slightly better off with 8.
 * I found considerable improvement by including color binning features regarding the black vs white cars, which were not recognized even nearly equally well with just HOG features, and also some with spatial. Moreover, I found doubling the bin size for colors added some without considerably altering feature size. I also had normalized my images to (0,1), so my binning range changed as well.
+
+See below for the intensity image and HOG features for each channel in an HSV mapping of the above positive example using my final results (8 px/cell, 9 orientations, 2 cells per block, 32 bin color, 32x32 spatial:
+
+![alt text][hog_features]
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
@@ -93,7 +91,6 @@ On the topic of overlap, I found that considerable overlap in my tiling was extr
 In terms of window sizing, I found that using two, integer multiples of the training data shape for window sizes gave my pipeline some invariance to size, which was important considering the training data, which tended to be shot from a similar distance. I found that further limiting the portion of the image given to each window based on expected car size helped me (again) both to minimize computation time as well as false positive rate (running a window in a section of the frame where it was size mismatched with cars appearing in a similar location --again, this relates to what training data is used- only increased false positives on landscape, etc.). I think that a more robust solution would likely use a properly architected convnet capable of size invariance.
 
 Finally, as mentioned previously, my windowing had to be entirely rewritten from the Udacity provided base solution. The hundreds of histograms run for each HOG extraction were the second of the pain points in running time. To bypass this, we were taught an alternative, in which we extracted HOG features from the entire frame and then tiled across that, rather than the opposite. This required a good bit of semi-frustrating arithmatic, as the HOG output was almost half a dozen dimensions, none of which were readily guessable to me ;-). The process included producing step counts and sizes, as well as some conversions of the original image based on a particular HOG frame bounds, to allow for spatial and color binning feature extraction. Extremely useful (though entirely unintuitive to me, at the outset) was the idea of scaling the input image and maintaining a constant window size. This required a bit of up and down scaling, both of the tiled images and their bounds, but ultimately made for a fairly logical means of dealing with various window sizes. All in all, this probably consumed the bulk of my time with this project, but the gains in speed were absolutely worthwhile, from easily 30-35 minutes (on a fairly beastly, brand new GPU workstation) down to a few minutes (for the full project video). 
-![alt text][image3]
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
@@ -103,18 +100,18 @@ Specific to the classifier, my traditional 'tuning' consisted on learning family
 
 A number of examples using the sample images I worked with for the non-video part of development, using one of my more successful paramter sets for stills (that was, incidentally, subpar for video), 1, 1.5 scale windows, rather loose boundaries:
 
-![alt text][image4]
-![alt text][image4]
-![alt text][image4]
-![alt text][image4]
-![alt text][image4]
-![alt text][image4]
+![alt text][pipeline0]
+![alt text][pipeline1]
+![alt text][pipeline2]
+![alt text][pipeline3]
+![alt text][pipeline4]
+![alt text][pipeline5]
 ---
 
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./supporting_media/final_video.mp4)
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
@@ -125,7 +122,7 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Here are six frames and their corresponding heatmaps:
 
-![alt text][image5]
+![alt text][video_frams]
 
 ### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
 ![alt text][image6]
@@ -141,4 +138,12 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+I mentioned this a few times before, but it merits repeating: the time required for the default provided implementations was just unworkable in terms of the kind of empiricism this project requires. By far the bulk of my time was spent finding and/or implementing faster ways to deal with HOG and SVM. The secondary problem was the general insufficiency of SVM for image classification compared to modern methods. Obivously it was the go-to for a number of years, but it's hard to see the kind of results a poorly tuned CNN provides and then go back to basically any linear method. The result of using a second best classifier was a considerable amount of full-on and partial (calling a very small part of the car "car" added considerable noise heat) false positives. 
+
+Personally, I was more or less able to get past the slowness, the HOG and LinearSVC made processing tolerable (although not at all if you were to want to use this for real time). But the jitteriness of my boxes still belay my troubles with false positives, I discuss a few larger/longer-term ideas for fixing this, but the best best in the short term would likely be continued focus on feature selection and on optimizing the filter/thresholding/averaging aspects of my heatmap function. 
+
+Among those longer term solutions: adding robustness here pretty much demands a CNN, and one architected to emphasize scale invariance. An improved dataset, with more conditions would help; and augmentation of the data is the obvious low-hanging fruit here. More advanced signal processing and/or clustering for the sake of specific vehicle tracking despite obfuscation, etc. would also help.
+
+The pipeline as it stands (and this seems common) doesn't instill much confidence. The image is sliced specific to this camera positioning and angle, the classifier is focused on same-direction-of-traffic vehicle positioning, and the data seems almost entirely focused on sedans, on precipitation free, well-lit days. Moreover, all of the empiricism involved surely bled bits of test into the training that wouldn't even cross my mind. 
+
+At the end of the day, I've really learned one thing: we have it much better now than our counterparts did even 5-10 years ago. The staff collected and augmented data and the students slaved for collective months over a hot workstation, tuning everything possible, and the best of our results is still second-best to even the low-grade NN attempts. Pure CV with old-school (in terms of popularity) ML hypothesis families is just hard. Real hard. 
