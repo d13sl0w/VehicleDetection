@@ -46,7 +46,8 @@ Noteably, I used this feature extraction only for processing the training data. 
 
 ![alt text][image1]
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+
+I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
 Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
@@ -55,7 +56,13 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+Regarding parameters, I found ultimately that the defaults provided we're mostly adequate. 
+
+* I experimented somewhat with colorspace, finding YCrCb, HSV, and HLS to work about comparably. I am, however, more comfortable with HSV as far as intuitions as I've been using it all semester; and, it is also well regarded for CV generally, but also in terms of describing light cast, which seems to have been a recurring issue for many students, that I've largely been spared. Moreover, I tried playing with the number of channels, and still feel that the hue channel is superfluous, and possibly detrimental for such a specific track and with so little data. That said, the pipeline worked well enough (and with LinearSVC, fast enough) that I kept it just in case, and maybe for a bit of additional accuracy at the cost of reduced robustness. 
+* Block size is widely accepted as more-or-less settled on 2x2 (and in fact, I believe some major implementations allow for nothing larger). 
+* Orientation count is also more or less ideal at 9, this can be found in the literature even.
+* Pixels per cell I did attempt to double, but I found I had been slightly better off with 8.
+* I found considerable improvement by including color binning features regarding the black vs white cars, which were not recognized even nearly equally well with just HOG features, and also some with spatial. Moreover, I found doubling the bin size for colors added some without considerably altering feature size. I also had normalized my images to (0,1), so my binning range changed as well.
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
@@ -88,7 +95,9 @@ Finally, as mentioned previously, my windowing had to be entirely rewritten from
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  
+
+Here are some example images:
 
 ![alt text][image4]
 ---
@@ -101,7 +110,7 @@ Here's a [link to my video result](./project_video.mp4)
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+For each positive result, I incremented the corresponding space in my heatmap by one. After passing all windows through for a frame, I thresholded the frame at a medium single-digit integer, which I tuned purely empirically. I then pushed this new heatmap into a quasi-lowpass filter with the previous rolling average heatmap (it's parameter alpha was, again, tuned empirically), and finally, I took a last minute cut, throwing away any newly introduced, low intensities. I then passed this final composite map into `scipy.ndimage.measurements.label()` which conveniently yielded me labels and patches corresponding to raised intensities. I then assumed each blob corresponded to a vehicle (if continued, I had had some conversation with classmates about mixed results in using particle filters to main individuality of adjacent vehicles (next semester, maybe?!). I finally wrote bounding boxes to the image via OpenCV's rectangles.  
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
