@@ -59,7 +59,7 @@ I tried various combinations of parameters and...
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-*see code cell 3 of ipython notebook
+*see code cells 4, 5, and 6 of ipython notebook
 
 For the classification stage of my pipeline, I worked with a number of candidate algorithms. Interestingly, though, the initial search was caused not by a need for superior classification accuracy, but by a strong desire for an algorithm capable of faster predictions. All of the classifiers I tested, including the first (SVM with a radial basis function kernel), produced 97%-99% classification accuracy. However, I found, using python's profile library and the ipython magix prun, that the speed of my pipeline was strongly hampered by the cost of the SVM-rbf's predict function (the linear kernel was somewhat better, but not enough). Over the course of taking tiles from a frame, the predict function was being called hundreds of times, for a total of often over 0.6 seconds per frame. Especially after the writing of the optimized HOG-compute function, this became the dominating cost in what was a 35 minute pipeline --simply miserable to experiment with for such a highly parameterized, empirical task. 
 
@@ -67,12 +67,23 @@ In search of a comparably accurate, but faster-to-classify algorithm, I tried SV
 
 Regarding choice of data for the classifier: I found that I was able to do without the customized bounding-box data Udacity provided more recently, though it would certainly find use if I had to produce a more robust algorithm. However, I found the extra negatives drawn from the project track added considerably to my pipeline's ability to keep false positives at a tolerable rate, and I thank you all for going through the trouble to add it! 
 
+I also found it extremely useful to create a number of small clips for some (snooping-ish) testing as running on the whole video was simply too time-consuming for the sake of testing these algorithms --given that their performance on the training set was such a poor predictor, relatively, for performance on the video (with or without heightened regularization).
+
 ###Sliding Window Search
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+*see code cells 7 of ipython notebook
 
+My sliding window search was implemented as a function in my CarTracker class. The various choices I made regarding it were based on three concerns: optimizing running time, supressing false positives, and allowing maximal flexibility. 
+
+The first consideration I made was to slice off as much of the frame as possibile without losing accuracy. Obviously the sky and grass needn't be considered, and in our case, neither did the opposing direction of highway. This supressed the number of false positives and led to a more cleanly heat map. Moreover, in cutting out large swarths of the image, I was able to tile through the remaining image much more quickly, or alternatively, to allow for more tiling overlap at similar speeds. Obviously, trimming an image like this is a fairly empirical process, and decreases the robustness of the overall system, but similar savings could be found more reliably using a lane-finding algorithm to produce less "hand-tuned" estimates of where we need to be concerned with cars driving. 
+
+On the topic of overlap, I found that considerable overlap in my tiling was extremely important (and that is actually what focused so much of my time on optimization, as high overlap increased run time extremely quickly). Allowing overlap ensured that each window was given a number of opportunities to classify the car as being present, and allowing the car to be spotted multiple times enabled the entire concept of the heatmap for false positive supression. Given the relatie weakness of linear models for image classification, false positives were essentially guaranteed; the heatmap/overlapping scheme essentially allowed us to run "multiple experiments" to find a better signal noise ratio. I found that much less thant 70% overlap was insufficient to find an acceptable S/N ratio in the images. 
+
+In terms of window sizing, I found that using two, integer multiples of the training data shape for window sizes gave my pipeline some invariance to size, which was important considering the training data, which tended to be shot from a similar distance. I found that further limiting the portion of the image given to each window based on expected car size helped me (again) both to minimize computation time as well as false positive rate (running a window in a section of the frame where it was size mismatched with cars appearing in a similar location --again, this relates to what training data is used- only increased false positives on landscape, etc.). I think that a more robust solution would likely use a properly architected convnet capable of size invariance.
+
+Finally, as mentioned previously, my windowing had to be entirely rewritten from the Udacity provided base solution. The hundreds of histograms run for each HOG extraction were the second of the pain points in running time. To bypass this, we were taught an alternative, in which we extracted HOG features from the entire frame and then tiled across that, rather than the opposite. This required a good bit of semi-frustrating arithmatic, as the HOG output was almost half a dozen dimensions, none of which were readily guessable to me ;-). The process included producing step counts and sizes, as well as some conversions of the original image based on a particular HOG frame bounds, to allow for spatial and color binning feature extraction. Extremely useful (though entirely unintuitive to me, at the outset) was the idea of scaling the input image and maintaining a constant window size. This required a bit of up and down scaling, both of the tiled images and their bounds, but ultimately made for a fairly logical means of dealing with various window sizes. All in all, this probably consumed the bulk of my time with this project, but the gains in speed were absolutely worthwhile, from easily 30-35 minutes (on a fairly beastly, brand new GPU workstation) down to a few minutes (for the full project video). 
 ![alt text][image3]
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
