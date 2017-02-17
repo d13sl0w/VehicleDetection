@@ -26,8 +26,10 @@ The goals / steps of this project are the following:
 [pipeline1]: ./supporting_media/boxes_on_image1.png
 [pipeline2]: ./supporting_media/boxes_on_image2.png
 [pipeline3]: ./supporting_media/boxes_on_image3.png
-[pipeline4]: ./supporting_media/boxes_on_image4.png
+[pipeline4]: ./supporting_media/boxes_on_image6.png
 [pipeline5]: ./supporting_media/boxes_on_image5.png
+[video_frames]: ./supporting_media/full_video_shots.png
+
 
 [video1]: ./project_video.mp4
 
@@ -125,17 +127,7 @@ For each positive result, I incremented the corresponding space in my heatmap by
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
 ### Here are six frames and their corresponding heatmaps:
-
-![alt text][video_frams]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
-
-
+![alt text][video_frames]
 ---
 
 ###Discussion
