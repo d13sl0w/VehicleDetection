@@ -26,7 +26,6 @@ The goals / steps of this project are the following:
 [pipeline5]: ./supporting_media/boxes_on_image5.png
 [video_frames]: ./supporting_media/full_video_shots.png
 
-[video1]: ./supporting_media/final_output.mp4
 
 
 ####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
@@ -112,14 +111,14 @@ A number of examples using the sample images I worked with for the non-video par
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./supporting_media/final_video.mp4)
+Here's a [link to my video result](./supporting_media/final_output.mp4)
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
 For each positive result, I incremented the corresponding space in my heatmap by one. After passing all windows through for a frame, I thresholded the frame at a medium single-digit integer, which I tuned purely empirically. I then pushed this new heatmap into a quasi-lowpass filter with the previous rolling average heatmap (it's parameter alpha was, again, tuned empirically), and finally, I took a last minute cut, throwing away any newly introduced, low intensities. I then passed this final composite map into `scipy.ndimage.measurements.label()` which conveniently yielded me labels and patches corresponding to raised intensities. I then assumed each blob corresponded to a vehicle (if continued, I had had some conversation with classmates about mixed results in using particle filters to main individuality of adjacent vehicles (next semester, maybe?!). I finally wrote bounding boxes to the image via OpenCV's rectangles.  
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+Here's an example result showing the heatmap from a few different frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
 ### Here are six frames and their corresponding heatmaps:
 ![alt text][video_frames]
