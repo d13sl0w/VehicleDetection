@@ -26,7 +26,7 @@ The goals / steps of this project are the following:
 [pipeline5]: ./supporting_media/boxes_on_image5.png
 [video_frames]: ./supporting_media/full_video_shots.png
 
-[video1]: ./final_output.mp4
+[video1]: ./supporting_media/final_output.mp4
 
 
 ####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  [Here](https://github.com/udacity/CarND-Vehicle-Detection/blob/master/writeup_template.md) is a template writeup for this project you can use as a guide and a starting point.  
