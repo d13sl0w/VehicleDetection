@@ -97,7 +97,9 @@ Finally, as mentioned previously, my windowing had to be entirely rewritten from
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  
+Generally, I optimized on window size, colorspace, learning algorithm, and a few other parameters. These are all covered in detail in their respective sections above. 
+
+Specific to the pipeline, I spent a fairly large amount of time on window size, window overlap, window area-of-application, where I eventually settled on scale window sizes of 1.5 and 2, covering overlapping sections of my general input region. I also spent a considerable amount of time adjusting parameters around my heatmap, including my initial threshold, the alpha parameter in my low-pass filter, and my final "cleanliness" threshold. The entire process was extrem 
 
 Here are some example images:
 
