@@ -99,10 +99,15 @@ Finally, as mentioned previously, my windowing had to be entirely rewritten from
 
 Generally, I optimized on window size, colorspace, learning algorithm, and a few other parameters. These are all covered in detail in their respective sections above. 
 
-Specific to the pipeline, I spent a fairly large amount of time on window size, window overlap, window area-of-application, where I eventually settled on scale window sizes of 1.5 and 2, covering overlapping sections of my general input region. I also spent a considerable amount of time adjusting parameters around my heatmap, including my initial threshold, the alpha parameter in my low-pass filter, and my final "cleanliness" threshold. The entire process was extrem 
+Specific to the classifier, my traditional 'tuning' consisted on learning family selection, strength of regularization, and data preprocessing. This is all described in detail in the above section on the selection of and implementation of my classifier. Again though, the bulk of my trouble was not in getting the classifier to recognize a car, but in getting a (now) less-than linear classifier to turn up few enough false positives to allow my heatmap method to deal with them. Chiefly, this consisted of providing training-data-like perspectives to the classifier (described above in section on choice and positional range of different window sizes), incorporating both chromatic and contour data, and presenting each window with a number of slightly translated tiles of the cars via tile overlap in the feature extractor. Beyond this, I found my time better spend optimizing the heatmap/FP-rejection portion of my pipeline.  
 
-Here are some example images:
+A number of examples using the sample images I worked with for the non-video part of development, using one of my more successful paramter sets for stills (that was, incidentally, subpar for video), 1, 1.5 scale windows, rather loose boundaries:
 
+![alt text][image4]
+![alt text][image4]
+![alt text][image4]
+![alt text][image4]
+![alt text][image4]
 ![alt text][image4]
 ---
 
