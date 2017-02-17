@@ -120,7 +120,6 @@ For each positive result, I incremented the corresponding space in my heatmap by
 
 Here's an example result showing the heatmap from a few different frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
-### Here are six frames and their corresponding heatmaps:
 ![alt text][video_frames]
 ---
 
