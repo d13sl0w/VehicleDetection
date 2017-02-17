@@ -1,9 +1,6 @@
 # VehicleDetection
 Vehicle detection project for SDC program
 
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 **Vehicle Detection Project**
@@ -18,7 +15,6 @@ The goals / steps of this project are the following:
 * ~~Estimate a bounding box for vehicles detected.~~
 
 [//]: # (Image References)
-![alt text][training]
 
 [training]: ./supporting_media/positivenegative.png
 [hog_features]: ./supporting_media/HOGfeatures.png
@@ -29,7 +25,6 @@ The goals / steps of this project are the following:
 [pipeline4]: ./supporting_media/boxes_on_image6.png
 [pipeline5]: ./supporting_media/boxes_on_image5.png
 [video_frames]: ./supporting_media/full_video_shots.png
-
 
 [video1]: ./project_video.mp4
 
