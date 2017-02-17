@@ -10,12 +10,12 @@ Vehicle detection project for SDC program
 
 The goals / steps of this project are the following:
 
-~~* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier~~
-~~* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector.~~ 
-~~* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.~~
-~~* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.~~
-~~* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.~~
-~~* Estimate a bounding box for vehicles detected.~~
+* ~~Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier~~
+* ~~Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector.~~ 
+* ~~Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.~~
+* ~~Implement a sliding-window technique and use your trained classifier to search for vehicles in images.~~
+* ~~Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.~~
+* ~~Estimate a bounding box for vehicles detected.~~
 
 [//]: # (Image References)
 [image1]: ./examples/car_not_car.png
@@ -36,9 +36,13 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+*see code cell 3 of ipython notebook
 
-I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
+I began by reading in globs of positive and negative training data. I then used the provided utility batch feature extractor, which I modified slightly to use opencv image reading utilities, as well as to normalize all images to (0,1) to ensure no issues with format, etc. once they were in the pipeline. The feature selection consisted of (some combination of) HOG, spatial histogramming, and color binning.  
+
+This provided an almost infinite space of parameter selection possibilities, which will be discussed below. 
+
+Noteably, I used this feature extraction only for processing the training data. All other data for predictions was processed by a seperate function. This function, inspired by the tutorial video for the project, took
 
 ![alt text][image1]
 
@@ -55,7 +59,13 @@ I tried various combinations of parameters and...
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+*see code cell 3 of ipython notebook
+
+For the classification stage of my pipeline, I worked with a number of candidate algorithms. Interestingly, though, the initial search was caused not by a need for superior classification accuracy, but by a strong desire for an algorithm capable of faster predictions. All of the classifiers I tested, including the first (SVM with a radial basis function kernel), produced 97%-99% classification accuracy. However, I found, using python's profile library and the ipython magix prun, that the speed of my pipeline was strongly hampered by the cost of the SVM-rbf's predict function (the linear kernel was somewhat better, but not enough). Over the course of taking tiles from a frame, the predict function was being called hundreds of times, for a total of often over 0.6 seconds per frame. Especially after the writing of the optimized HOG-compute function, this became the dominating cost in what was a 35 minute pipeline --simply miserable to experiment with for such a highly parameterized, empirical task. 
+
+In search of a comparably accurate, but faster-to-classify algorithm, I tried SVM with a linear kernel, as well as XGBoost (as it is widely regarded as the top performing DT subtype at the present time). I found both of these to performant on the training set, but the linear kernel SVM was still quite slow (though it performed admirably on the video stream), and  XGBoost performed poorly on the actual training set relative to SVM despite it being tremendously fast, even without compilation of GPU capabilities or threading. Unfortunately the shear number of tuneable parameters made it unappealing to use under constrained time (though, were I to continue with this project not having found my final solution, I would certainly taken this as second best). Fortunately, I came across LinearSVC, I tremendously faster implementation of SVM that trained rapidly and performed as well as any of my other choices. 
+
+Regarding choice of data for the classifier: I found that I was able to do without the customized bounding-box data Udacity provided more recently, though it would certainly find use if I had to produce a more robust algorithm. However, I found the extra negatives drawn from the project track added considerably to my pipeline's ability to keep false positives at a tolerable rate, and I thank you all for going through the trouble to add it! 
 
 ###Sliding Window Search
 
